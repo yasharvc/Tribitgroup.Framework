@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="Shouldly" Version="4.2.1" />
     <PackageReference Include="xunit" Version="2.5.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,11 +23,8 @@
     </PackageReference>
   </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\src\core\Tribitgroup.Framework.Dapper\Tribitgroup.Framework.Dapper.csproj" />
-		<ProjectReference Include="..\..\src\core\Tribitgroup.Framework.DB.Relational.Helper\Tribitgroup.Framework.DB.Relational.Helper.csproj" />
-		<ProjectReference Include="..\..\src\core\Tribitgroup.framework.Shared\Tribitgroup.Framework.Shared.csproj" />
-		<ProjectReference Include="..\..\Tribitgroup.Framework.Test.Helper\Tribitgroup.Framework.Test.Helper.csproj" />
-	</ItemGroup>
-	
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\core\Tribitgroup.framework.Identity.Shared\Tribitgroup.Framework.Identity.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

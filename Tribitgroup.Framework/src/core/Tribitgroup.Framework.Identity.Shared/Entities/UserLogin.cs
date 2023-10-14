@@ -1,7 +1,6 @@
 ﻿namespace Tribitgroup.Framework.Identity.Shared.Entities
 {
-    public interface IUsername
+    public class UserLogin
     {
-        string Username {  get; }
     }
 }

@@ -2,6 +2,6 @@
 {
     public interface IHasActiveStatus
     {
-        bool IsActive { get; set; }
+        bool IsActive { get; }
     }
 }
