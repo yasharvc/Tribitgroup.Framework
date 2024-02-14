@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using Tribitgroup.Framework.Shared.Extensions;
-using Tribitgroup.Framework.Shared.Interfaces;
+using Tribitgroup.Framework.Shared.Interfaces.Entity;
+using Tribitgroup.Framework.Shared.Interfaces.Entity.Validation;
 
 namespace Tribitgroup.Framework.Shared.Types
 {
@@ -66,6 +68,43 @@ namespace Tribitgroup.Framework.Shared.Types
             }
         }
 
-        
+        public async Task ValidateAsync()
+        {
+            var entityType = GetType();
+            Type interfaceType = typeof(IValidator);
+            Type hasValidatorType = typeof(IHasValidator);
+            var validatorInterfaces = entityType.GetInterfaces();
+            var lst = validatorInterfaces.Where(m => hasValidatorType.IsAssignableFrom(m) && m != hasValidatorType && m != entityType).ToList();
+            var properties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
+
+
+            foreach (var item in lst)
+            {
+                var interfaceProps = item.GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
+                foreach (var prop in interfaceProps)
+                {
+                    var allAttrs = prop.GetCustomAttributes().Where(attr =>
+                    attr.GetType().GetInterfaces().Select(m => m.Name).Contains(typeof(IValidator<>).Name)
+                    ).Select(attr => attr as object);
+
+                    foreach (var attr in allAttrs)
+                    {
+                        var method = attr.GetType().GetMethod(nameof(IValidator<string>.ValidateAsync));
+                        try
+                        {
+                            if (method?.Invoke(attr, new object[] { this }) is Task task)
+                            {
+                                await task;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            throw ex?.InnerException ?? throw ex ?? throw new Exception();
+                        }
+                    }
+                }
+
+            }
+        }
     }
 }

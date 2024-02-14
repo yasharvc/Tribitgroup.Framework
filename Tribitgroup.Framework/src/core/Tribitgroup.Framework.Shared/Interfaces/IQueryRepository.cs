@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Tribitgroup.Framework.Shared.Interfaces.Entity;
 using Tribitgroup.Framework.Shared.Types;
 
 namespace Tribitgroup.Framework.Shared.Interfaces
