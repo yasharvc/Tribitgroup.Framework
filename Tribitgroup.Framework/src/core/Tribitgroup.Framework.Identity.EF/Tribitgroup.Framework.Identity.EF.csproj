@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tribitgroup.Framework.Dapper\Tribitgroup.Framework.Dapper.csproj" />
+    <ProjectReference Include="..\Tribitgroup.Framework.DB.Relational.Helper\Tribitgroup.Framework.DB.Relational.Helper.csproj" />
+    <ProjectReference Include="..\Tribitgroup.framework.Identity.Shared\Tribitgroup.Framework.Identity.Shared.csproj" />
+    <ProjectReference Include="..\Tribitgroup.framework.Shared\Tribitgroup.Framework.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

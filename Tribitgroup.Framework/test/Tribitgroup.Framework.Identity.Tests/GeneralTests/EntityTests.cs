@@ -97,7 +97,7 @@ namespace Tribitgroup.Framework.Identity.Tests.GeneralTests
         {
             var p1 = new Product { Name = "P1" };
             var p2 = new Product { Name = "P2" };
-            var repo = new DapperCUDRepository<Product>(new DapperCUDConnectionProvider<Product>(GetDbContext()));
+            var repo = new DapperCUDRepository<Product, MyDbContext>(new DapperCUDConnectionProvider<Product>(GetDbContext()));
 
             await repo.InsertManyAsync(new List<Product> { p1, p2 });
 

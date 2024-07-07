@@ -1,4 +1,4 @@
-﻿using Tribitgroup.Framework.Shared.Interfaces;
+﻿using Tribitgroup.Framework.Shared.Interfaces.Entity;
 
 namespace Tribitgroup.Framework.Shared.Types
 {

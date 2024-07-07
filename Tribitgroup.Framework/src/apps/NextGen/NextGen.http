@@ -1,0 +1,6 @@
+@NextGen_HostAddress = http://localhost:5206
+
+GET {{NextGen_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -2,7 +2,7 @@
 using System.Reflection;
 using Tribitgroup.Framework.DB.Relational.Helper.SelectBuilder;
 using Tribitgroup.Framework.Shared.Enums;
-using Tribitgroup.Framework.Shared.Interfaces;
+using Tribitgroup.Framework.Shared.Interfaces.Entity;
 using Tribitgroup.Framework.Shared.Types;
 
 namespace Tribitgroup.Framework.DB.Relational.Helper.Extensions

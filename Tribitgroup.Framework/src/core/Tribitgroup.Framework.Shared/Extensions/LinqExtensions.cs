@@ -62,50 +62,6 @@ namespace Tribitgroup.Framework.Shared.Extensions
             return query.AsQueryable().Where(whereClause);
         }
 
-        public static IQueryable<T> Where<T>(this IQueryable<T> query, Condition condition)
-        {
-            var config = new ParsingConfig
-            {
-                IsCaseSensitive = false
-            };
-            if (condition.Operator == ConditionOperatorEnum.Contains)
-            {
-                return query.Where(config, $"{condition.PropertyName}.Contains(@0)", condition.Values.First());
-            }
-            else if (condition.Operator == ConditionOperatorEnum.In)
-            {
-                return query.Where($"{condition.PropertyName} in @0", condition.Values);
-            }
-            else if (condition.Operator == ConditionOperatorEnum.Between)
-            {
-                return query.Where($"{condition.PropertyName} >= @0 AndAlso {condition.PropertyName} <= @1", condition.Values.First(), condition.Values.Skip(1).Take(1));
-            }
-            else if (condition.Operator == ConditionOperatorEnum.Equal)
-            {
-                return query.Where($"{condition.PropertyName} == @0", condition.Values.First());
-            }
-            else if (condition.Operator == ConditionOperatorEnum.BiggerThan)
-            {
-                return query.Where($"{condition.PropertyName} > @0", condition.Values.First());
-            }
-            else if (condition.Operator == ConditionOperatorEnum.BiggerOrEqual)
-            {
-                return query.Where($"{condition.PropertyName} >= @0", condition.Values.First());
-            }
-            else if (condition.Operator == ConditionOperatorEnum.SmallerOrEqual)
-            {
-                return query.Where($"{condition.PropertyName} <= @0", condition.Values.First());
-            }
-            else if (condition.Operator == ConditionOperatorEnum.SmallerThan)
-            {
-                return query.Where($"{condition.PropertyName} < @0", condition.Values.First());
-            }
-            else if (condition.Operator == ConditionOperatorEnum.NotEqual)
-            {
-                return query.Where($"{condition.PropertyName} != @0", condition.Values.First());
-            }
-            return query;
-        }
 
         public static IQueryable<T> Where<T>(this IQueryable<T> query, params Condition[] conditions)
         {
@@ -142,7 +98,7 @@ namespace Tribitgroup.Framework.Shared.Extensions
         public static void SetMemberValue<T>(this T entity, string propName, object? value)
         {
             var prop = entity?.GetType().GetProperty(propName);
-            prop?.SetValue(entity, entity.ChangeTo(prop.PropertyType, value));
+            prop?.SetValue(entity, value is null ? null : entity.ChangeTo(prop.PropertyType, value));
         }
 
         public static void AddValueToListMember<T>(this T entity, Expression<Func<T, object>> expression, params object[] values)
@@ -189,6 +145,138 @@ namespace Tribitgroup.Framework.Shared.Extensions
                 memberNames.Add(GetMemberName(cExpression.Body));
             }
             return memberNames;
+        }
+
+        public static IQueryable<T> SortBy<T>(this IQueryable<T>? query, ICollection<Sort>? sorts)
+        {
+            if (query == null)
+            {
+                return Enumerable.Empty<T>().AsQueryable();
+            }
+
+            if (sorts == null || !sorts.Any())
+            {
+                return query;
+            }
+            var res = sorts.First().GetSortText();
+            var sortString = sorts.Skip(1).Aggregate(res, (current, sort) => current + " , " + sort.GetSortText());
+
+            return query.OrderBy(sortString).AsQueryable();
+        }
+
+        private static string GetSortText(this Sort sort)
+        {
+            return sort.SortType == SortTypeEnum.ASC ? sort.Column : $"{sort.Column} descending";
+        }
+
+        public static async Task<System.Linq.Dynamic.Core.PagedResult<T>> PaginateAsync<T>(this IQueryable<T>? query, Pagination? pagination = null, int defaultMaxCount = 1000)
+        {
+            if (query is null)
+            {
+                query = Enumerable.Empty<T>().AsQueryable();
+            }
+            await Task.CompletedTask;
+            return HandlePagination(query, pagination, defaultMaxCount);
+        }
+
+        private static System.Linq.Dynamic.Core.PagedResult<T> HandlePagination<T>(IQueryable<T> query, Pagination? pagination, int defaultMaxCount)
+        {
+            if (pagination is null)
+            {
+                pagination = GetDefaulPagination(defaultMaxCount);
+            }
+            else
+            {
+                if (pagination.Page < 1)
+                    pagination.Page = 1;
+
+                if (pagination.Count > defaultMaxCount || pagination.Count < 1)
+                    pagination.Count = defaultMaxCount;
+            }
+
+            var pagedResult = query.PageResult(pagination.Page, pagination.Count);
+            pagedResult.Queryable = pagedResult.Queryable.ToList().AsQueryable();
+            return pagedResult;
+        }
+
+        private static Pagination GetDefaulPagination(int defaultMaxCount)
+        {
+            return new Pagination { Page = 1, Count = defaultMaxCount };
+        }
+
+        public static IQueryable<T> Where<T>(this IQueryable<T> query, Condition condition)
+        {
+            var config = new ParsingConfig
+            {
+                IsCaseSensitive = false
+            };
+            if (condition.Operator == ConditionOperatorEnum.Contains)
+            {
+                return query.Where(config, $"{condition.PropertyName}.Contains(@0)", condition.Values.First());
+            }
+            else if (condition.Operator == ConditionOperatorEnum.In)
+            {
+                return ApplyInClause(query, condition);
+            }
+            else if (condition.Operator == ConditionOperatorEnum.Between)
+            {
+                return query.Where($"{condition.PropertyName} >= @0 AndAlso {condition.PropertyName} <= @1", condition.Values.First(), condition.Values.Skip(1).Take(1).First());
+            }
+            else if (condition.Operator == ConditionOperatorEnum.Equal)
+            {
+                return query.Where($"{condition.PropertyName} == @0", condition.Values.First());
+            }
+            else if (condition.Operator == ConditionOperatorEnum.BiggerThan)
+            {
+                return query.Where($"{condition.PropertyName} > @0", condition.Values.First());
+            }
+            else if (condition.Operator == ConditionOperatorEnum.BiggerOrEqual)
+            {
+                return query.Where($"{condition.PropertyName} >= @0", condition.Values.First());
+            }
+            else if (condition.Operator == ConditionOperatorEnum.SmallerOrEqual)
+            {
+                return query.Where($"{condition.PropertyName} <= @0", condition.Values.First());
+            }
+            else if (condition.Operator == ConditionOperatorEnum.SmallerThan)
+            {
+                return query.Where($"{condition.PropertyName} < @0", condition.Values.First());
+            }
+            else if (condition.Operator == ConditionOperatorEnum.NotEqual)
+            {
+                return query.Where($"{condition.PropertyName} != @0", condition.Values.First());
+            }
+            return query;
+            static IQueryable<T> ApplyInClause(IQueryable<T> query, Condition condition)
+            {
+                var propType = typeof(T).GetProperty(condition.PropertyName)?.PropertyType;
+                if (propType is null)
+                    return query;
+
+                if (propType == typeof(string))
+                {
+                    return query.Where($"{condition.PropertyName} in @0", condition.Values.ToArray());
+                }
+                if (propType == typeof(Guid))
+                {
+                    var typedValues = condition.Values.Select(s => new Guid(s)).ToArray();
+                    return query.Where($"{condition.PropertyName} in @0", typedValues);
+                }
+                else
+                {
+                    Type t = Nullable.GetUnderlyingType(propType) ?? propType;
+
+                    var values = condition.Values.Select(s => Convert.ChangeType(s, t)).ToArray();
+                    Type gt = typeof(List<>).MakeGenericType(propType);
+                    IList typedValues = (IList)Activator.CreateInstance(gt);
+
+                    foreach (var item in values)
+                    {
+                        typedValues.Add(item);
+                    }
+                    return query.Where($"{condition.PropertyName} in @0", typedValues);
+                }
+            }
         }
 
         public static string GetMemberName<T>(this Expression<Func<T, object>> expression) => GetMemberName(expression.Body);
